@@ -6,7 +6,7 @@ from git import Repo
 
 # get env
 load_dotenv(".env")
-load_dotenv("vastai_setup/.env.vastai")
+load_dotenv("vastai/.env.vastai")
 
 # access local repo
 repo = Repo()
