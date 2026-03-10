@@ -1,0 +1,10 @@
+ipykernel
+
+einops
+torch
+numpy
+plotly
+transformer_lens
+dotenv
+scikit-learn
+peft
