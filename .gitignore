@@ -2,3 +2,7 @@
 
 **/.env.vastai
 .env.local
+/.ipynb_checkpoints
+/.vscode
+
+**/__pycache__

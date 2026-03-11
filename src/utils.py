@@ -617,8 +617,6 @@ def run_oracle(
         target_lora_path=target_lora_path,
     )
 
-    print(acts_by_layer)
-
     # Get target input ids
     seq_len = int(inputs_BL["input_ids"].shape[1])
     attn = inputs_BL["attention_mask"][0]
@@ -736,3 +734,43 @@ def run_oracle_extract(
         return results_obj.segment_responses[0]
     else:  # full_seq
         return results_obj.full_sequence_responses[0]
+
+
+# ============================================================
+# ABSTRACTIONS FOR MAIN
+# ============================================================
+
+
+@dataclass
+class OracleSetup:
+    model: AutoModelForCausalLM
+    tokenizer: AutoTokenizer
+    device: torch.device
+
+
+def query_oracle(
+    user_prompt: str, target_answer: str, oracle_prompt: str, oracle_setup: OracleSetup
+) -> str:
+    # === Preparation ===
+    target_prompt_dict = [
+        {"role": "user", "content": user_prompt},
+        {"role": "assistant", "content": target_answer},
+    ]
+    target_chat = oracle_setup.tokenizer.apply_chat_template(
+        target_prompt_dict,
+        tokenize=False,
+        add_generation_prompt=True,
+    )
+
+    # === Querying the oracle ===
+    result = run_oracle(
+        oracle_setup.model,
+        oracle_setup.tokenizer,
+        oracle_setup.device,
+        target_prompt=target_chat,
+        target_lora_path="default",
+        oracle_prompt=oracle_prompt,
+        oracle_lora_path="oracle",
+    )
+
+    return result.full_sequence_responses[0]

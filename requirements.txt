@@ -8,3 +8,4 @@ transformer_lens
 dotenv
 scikit-learn
 peft
+RISE
