@@ -8,7 +8,7 @@ from typing import Callable
 from jaxtyping import Float, Int
 
 
-dotenv.load_dotenv(dotenv_path=str(".env"))
+dotenv.load_dotenv(".env.local")
 
 # === load all the shit ===
 dtype = torch.bfloat16
