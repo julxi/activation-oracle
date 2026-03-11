@@ -6,6 +6,7 @@ from git import Repo
 
 # get env
 load_dotenv(".env")
+load_dotenv(".env.local")
 load_dotenv("vastai/.env.vastai")
 
 # access local repo
@@ -70,5 +71,10 @@ with Connection(
         f"uv pip install --python {remote_python} -r {remote_workdir}/{repo_name}/requirements.txt",
         warn=True,
     )
+    conn.put(".env.local", remote=f"{remote_workdir}/{repo_name}/.env.local")
     conn.run(f'git config --global user.name "{git_user_name}"', warn=True)
     conn.run(f'git config --global user.email "{git_user_email}"', warn=True)
+    conn.run(
+        f"cd {remote_workdir}/{repo_name} && {remote_python} src/load_models.py",
+        warn=True,
+    )
