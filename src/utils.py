@@ -782,7 +782,7 @@ def query_oracle_on_chat(
     include_activations: str,
     oracle_setup: OracleSetup,
     add_generation_promt: bool = True,
-) -> str:
+) -> tuple[str, list[str]]:
 
     assert include_activations in (
         "all",
@@ -824,4 +824,4 @@ def query_oracle_on_chat(
         segment_start_idx=start,
     )
 
-    return oracle_result.segment_responses[0]
+    return oracle_result.segment_responses[0], target_chat_tokens[start:]
