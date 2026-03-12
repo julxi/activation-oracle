@@ -759,7 +759,7 @@ def query_oracle(
     target_chat = oracle_setup.tokenizer.apply_chat_template(
         target_prompt_dict,
         tokenize=False,
-        add_generation_prompt=True,
+        add_generation_prompt=False,
     )
 
     # === Querying the oracle ===
@@ -774,3 +774,54 @@ def query_oracle(
     )
 
     return result.full_sequence_responses[0]
+
+
+def query_oracle_on_chat(
+    chat: list[dict[str, str]],
+    oracle_prompt: str,
+    include_activations: str,
+    oracle_setup: OracleSetup,
+    add_generation_promt: bool = True,
+) -> str:
+
+    assert include_activations in (
+        "all",
+        "no_system",
+        "last_turn",
+    )
+
+    target_chat = oracle_setup.tokenizer.apply_chat_template(
+        chat,
+        tokenize=False,
+        add_generation_prompt=add_generation_promt,
+    )
+    target_chat_tokens = oracle_setup.tokenizer.tokenize(target_chat)
+
+    # determine start of tokens
+    start = 0
+    if include_activations == "last_turn":
+        start = (
+            len(target_chat_tokens) - 1 - target_chat_tokens[::-1].index("<|im_start|>")
+        )
+    if include_activations == "no_system" and chat[0]["role"] == "system":
+        system_chat = oracle_setup.tokenizer.apply_chat_template(
+            chat[0:1],
+            tokenize=False,
+            add_generation_prompt=False,
+        )
+        start = len(oracle_setup.tokenizer.tokenize(system_chat))
+
+    # run oracle
+    oracle_result = run_oracle(
+        oracle_setup.model,
+        oracle_setup.tokenizer,
+        oracle_setup.device,
+        target_chat,
+        target_lora_path="default",
+        oracle_prompt=oracle_prompt,
+        oracle_lora_path="oracle",
+        oracle_input_type="segment",
+        segment_start_idx=start,
+    )
+
+    return oracle_result.segment_responses[0]
